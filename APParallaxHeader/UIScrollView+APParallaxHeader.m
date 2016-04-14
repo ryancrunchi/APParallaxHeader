@@ -137,14 +137,6 @@ static char UIScrollViewParallaxView;
     return !self.parallaxView.hidden;
 }
 
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    CGRect parallaxFrame = self.parallaxView.frame;
-    parallaxFrame.size.width = self.frame.size.width;
-    self.parallaxView.frame = parallaxFrame;
-}
-
 @end
 
 #pragma mark - ShadowLayer
