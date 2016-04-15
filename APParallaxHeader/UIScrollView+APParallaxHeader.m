@@ -65,27 +65,19 @@ static char UIScrollViewParallaxView;
 - (void)addParallaxWithView:(UIView*)view andHeight:(CGFloat)height {
     if(self.parallaxView) {
         [self.parallaxView.currentSubView removeFromSuperview];
+        self.parallaxView.parallaxHeight = height;
         [view setFrame:CGRectMake(0, 0, self.parallaxView.frame.size.width, self.parallaxView.frame.size.height)];
         [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
         [self.parallaxView addSubview:view];
         CGFloat offsetY = self.contentOffset.y + self.parallaxView.parallaxHeight;
         CGRect newFrame = self.parallaxView.frame;
-        newFrame.size.height = self.parallaxView.parallaxHeight-offsetY;
+        newFrame.size.height = MAX(self.parallaxView.parallaxHeight-offsetY, self.parallaxView.minimumHeight);
         newFrame.origin.y = -self.parallaxView.parallaxHeight+offsetY;
-        if (!CGRectEqualToRect(self.parallaxView.frame, newFrame)) {
-            if ([self.parallaxView.delegate respondsToSelector:@selector(parallaxView:willChangeFrame:)]) {
-                [self.parallaxView.delegate parallaxView:self.parallaxView willChangeFrame:newFrame];
-            }
-            self.parallaxView.frame = newFrame;
-            if ([self.parallaxView.delegate respondsToSelector:@selector(parallaxView:didChangeFrame:)]) {
-                [self.parallaxView.delegate parallaxView:self.parallaxView didChangeFrame:newFrame];
-            }
-        }
-        [self.parallaxView setNeedsLayout];
+        self.parallaxView.frame = newFrame;
     }
-    else
-    {
+    else {
         APParallaxView *parallaxView = [[APParallaxView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, height)];
+        [view setFrame:CGRectMake(0, 0, parallaxView.frame.size.width, parallaxView.frame.size.height)];
         [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
         [parallaxView addSubview:view];
         
@@ -102,6 +94,7 @@ static char UIScrollViewParallaxView;
         self.parallaxView = parallaxView;
         self.showsParallax = YES;
     }
+    [self.parallaxView setNeedsLayout];
 }
 
 - (void)setParallaxView:(APParallaxView *)parallaxView {
@@ -237,6 +230,45 @@ static char UIScrollViewParallaxView;
     self.currentSubView = view;
 }
 
+- (void)setFrame:(CGRect)frame
+{
+    if (!CGRectEqualToRect(frame, self.frame) && self.state == APParallaxTrackingActive) {
+        if ([self.delegate respondsToSelector:@selector(parallaxView:willChangeFrame:)]) {
+            [self.delegate parallaxView:self willChangeFrame:frame];
+        }
+        
+        [super setFrame:frame];
+        
+        /*UIEdgeInsets newInsets = self.scrollView.contentInset;
+         newInsets.top = self.originalTopInset + newFrame.size.height;
+         [self.scrollView setContentInset:newInsets];*/
+        
+        if (self.automaticallyAdjustScrollIndicatorInsets) {
+            UIEdgeInsets newScrollInsets = self.scrollView.scrollIndicatorInsets;
+            newScrollInsets.top = self.originalTopInset + frame.size.height;
+            [self.scrollView setScrollIndicatorInsets:newScrollInsets];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(parallaxView:didChangeFrame:)]) {
+            [self.delegate parallaxView:self didChangeFrame:frame];
+        }
+    }
+    else {
+        [super setFrame:frame];
+    }
+}
+
+- (void)setMinimumHeight:(CGFloat)minimumHeight
+{
+    _minimumHeight = minimumHeight;
+    CGRect frame = self.frame;
+    if (frame.size.height <= minimumHeight) {
+        frame.size.height = minimumHeight;
+        [self setFrame:frame];
+        [self layoutIfNeeded];
+    }
+}
+
 #pragma mark - Observing
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -261,18 +293,7 @@ static char UIScrollViewParallaxView;
         if (self.minimumHeight > 0.f) {
             newFrame.size.height = MAX(newFrame.size.height, self.minimumHeight);
         }
-        
-        if (!CGRectEqualToRect(newFrame, self.frame)) {
-            if ([self.delegate respondsToSelector:@selector(parallaxView:willChangeFrame:)]) {
-                [self.delegate parallaxView:self willChangeFrame:self.frame];
-            }
-            
-            [self setFrame:newFrame];
-            
-            if ([self.delegate respondsToSelector:@selector(parallaxView:didChangeFrame:)]) {
-                [self.delegate parallaxView:self didChangeFrame:self.frame];
-            }
-        }
+        [self setFrame:newFrame];
     }
 }
 
