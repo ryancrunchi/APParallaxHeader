@@ -93,6 +93,12 @@ static char UIScrollViewParallaxView;
         
         self.parallaxView = parallaxView;
         self.showsParallax = YES;
+        
+        CGFloat offsetY = self.contentOffset.y + self.parallaxView.parallaxHeight;
+        CGRect newFrame = self.parallaxView.frame;
+        newFrame.size.height = MAX(self.parallaxView.parallaxHeight-offsetY, self.parallaxView.minimumHeight);
+        newFrame.origin.y = -self.parallaxView.parallaxHeight+offsetY;
+        self.parallaxView.frame = newFrame;
     }
     [self.parallaxView setNeedsLayout];
 }
