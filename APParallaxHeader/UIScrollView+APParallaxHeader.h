@@ -42,6 +42,7 @@ typedef NS_ENUM(NSUInteger, APParallaxTrackingState) {
 @property (nonatomic, strong) APParallaxShadowView *shadowView;
 @property (nonatomic) CGFloat minimumHeight;
 @property (nonatomic) BOOL automaticallyAdjustScrollIndicatorInsets;
+@property (nonatomic) BOOL sticky;
 
 - (id)initWithFrame:(CGRect)frame andShadow:(BOOL)shadow;
 

@@ -286,19 +286,19 @@ static char UIScrollViewParallaxView;
 
 - (void)scrollViewDidScroll:(CGPoint)contentOffset {
     // We do not want to track when the parallax view is hidden
-    /*if (contentOffset.y > 0) {
+    if (!_sticky && contentOffset.y > 0) {
         [self setState:APParallaxTrackingInactive];
     } else {
         [self setState:APParallaxTrackingActive];
     }
-    */
+    
     if(self.state == APParallaxTrackingActive) {
         CGFloat yOffset = contentOffset.y*-1;
         
         CGRect newFrame = CGRectMake(0, contentOffset.y, CGRectGetWidth(self.frame), yOffset);
         if (self.minimumHeight > 0.f) {
             newFrame.size.height = MAX(newFrame.size.height, self.minimumHeight);
-	    if(contentOffset.y > -1 * _minimumHeight) {
+            if(!_sticky && contentOffset.y > -1 * _minimumHeight) {
                 newFrame.origin.y = newFrame.origin.y - contentOffset.y - _minimumHeight;
             }
         }
