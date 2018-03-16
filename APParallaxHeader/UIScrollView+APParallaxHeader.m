@@ -298,6 +298,9 @@ static char UIScrollViewParallaxView;
         CGRect newFrame = CGRectMake(0, contentOffset.y, CGRectGetWidth(self.frame), yOffset);
         if (self.minimumHeight > 0.f) {
             newFrame.size.height = MAX(newFrame.size.height, self.minimumHeight);
+	    if(contentOffset.y > -1 * _minimumHeight) {
+                newFrame.origin.y = newFrame.origin.y - contentOffset.y - _minimumHeight;
+            }
         }
         [self setFrame:newFrame];
     }
