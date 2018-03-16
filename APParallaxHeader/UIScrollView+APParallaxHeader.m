@@ -286,7 +286,7 @@ static char UIScrollViewParallaxView;
 
 - (void)scrollViewDidScroll:(CGPoint)contentOffset {
     // We do not want to track when the parallax view is hidden
-    if (!_sticky && contentOffset.y > 0) {
+    if (_sticky || contentOffset.y > 0) {
         [self setState:APParallaxTrackingInactive];
     } else {
         [self setState:APParallaxTrackingActive];
